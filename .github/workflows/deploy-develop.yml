@@ -1,0 +1,41 @@
+name: Deploy develop
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  FOLDER_PROJECT: ${{ secrets.FOLDER_PROJECT }}
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Configure SSH
+      run: |
+        mkdir -p ~/.ssh/
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/dev.key
+        chmod 600 ~/.ssh/dev.key
+        cat >>~/.ssh/config <<END
+        Host dev
+          HostName $SSH_HOST
+          User $SSH_USER
+          IdentityFile ~/.ssh/dev.key
+          StrictHostKeyChecking no
+        END
+      env:
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+    - name: Deploy
+      run: ssh dev "cd $FOLDER_PROJECT && ./deploy.sh"

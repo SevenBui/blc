@@ -1,0 +1,19 @@
+#npm
+node_modules
+
+#Hardhat files
+artifacts
+bin
+cache
+build
+flatter
+package-lock.json
+yarn.lock
+.DS_Store
+.vscode
+.openzeppelin
+.env
+.github
+
+#mongo
+log
